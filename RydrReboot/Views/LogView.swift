@@ -18,7 +18,7 @@ struct LogView: View {
                         Text("No drives saved yet!")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.black.opacity(0.7))
-                            .offset(x: 25, y: -20)
+                            .offset(x: 20, y: -20)
                     } else {
                         ForEach(store.sessions) { session in
                             NavigationLink {
@@ -31,7 +31,7 @@ struct LogView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 24)
+                .padding(.top, -10)
                 .padding(.bottom, 32)
             }
         }
