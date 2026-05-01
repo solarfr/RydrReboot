@@ -9,13 +9,22 @@ struct HomepageView: View {
     @State private var store = DriveSessionStore.shared
 
     private let goalHours: Double = 50
+    private let goalHoursNight: Double = 10
 
     private var loggedHours: Double {
         store.totalLoggedHours
     }
+    
+    private var nightHours: Double {
+        store.totalNightHours
+    }
 
     private var progress: Double {
         min(max(loggedHours / goalHours, 0), 1)
+    }
+    
+    private var progressCircleNight: Double {
+        min(max(nightHours / goalHoursNight, 0), 1)
     }
 
     var body: some View {
@@ -26,6 +35,7 @@ struct HomepageView: View {
                 header
                 startDriveButton
                 progressCard
+                progressCardNight
                 locationMap
                 Spacer()
             }
@@ -81,7 +91,7 @@ struct HomepageView: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .stroke(Color.black.opacity(0.12), lineWidth: 1)
             )
-            .frame(height: 140)
+            .frame(height: 120)
             .overlay(
                 HStack(spacing: 18) {
                     ZStack {
@@ -92,16 +102,16 @@ struct HomepageView: View {
                             .stroke(Color.black, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                         Text(String(format: "%.0f%%", progress * 100))
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.black)
                     }
-                    .frame(width: 78, height: 78)
+                    .frame(width: 60, height: 60)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Hours logged")
+                        Text("Total Hours")
                             .font(.subheadline)
                             .foregroundStyle(.black.opacity(0.7))
-                        Text(String(format: "%.1f / %.0f", loggedHours, goalHours))
+                        Text(String(format: "%.fh / %.0fh", loggedHours, goalHours))
                             .font(.title2)
                             .foregroundStyle(.black)
                         Text("Keep going to reach 50!")
@@ -113,6 +123,48 @@ struct HomepageView: View {
                 }
                 .padding(.horizontal, 18)
             )
+    }
+    
+    private var progressCardNight: some View {
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
+            .fill(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.black.opacity(0.12), lineWidth: 1)
+            )
+            .frame(height: 120)
+            .overlay(
+                HStack(spacing: 18) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.black.opacity(0.08), lineWidth: 10)
+                        Circle()
+                            .trim(from: 0, to: progressCircleNight)
+                            .stroke(Color.black, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Text(String(format: "%.0f%%", progressCircleNight * 100))
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.black)
+                    }
+                    .frame(width: 60, height: 60)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Night Hours")
+                            .font(.subheadline)
+                            .foregroundStyle(.black.opacity(0.7))
+                        Text(String(format: "%.0fh / %.0fh", nightHours, goalHoursNight))
+                            .font(.title2)
+                            .foregroundStyle(.black)
+                        Text("Keep going to reach 50!")
+                            .font(.caption)
+                            .foregroundStyle(.black.opacity(0.6))
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 18)
+            )
+            .offset(y: -10)
     }
 
     private var locationMap: some View {
@@ -128,6 +180,7 @@ struct HomepageView: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(Color.black.opacity(0.12), lineWidth: 1)
         )
+        .offset(y: -20)
         .overlay(alignment: .topLeading) {
             Text("Live location")
                 .font(.caption)
@@ -137,6 +190,7 @@ struct HomepageView: View {
                 .background(Color.white.opacity(0.9))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .padding(12)
+                .offset(y: -20)
         }
     }
 }

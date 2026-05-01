@@ -47,6 +47,13 @@ final class DriveSessionStore {
     var totalLoggedHours: Double {
         sessions.reduce(0) { $0 + $1.duration } / 3600
     }
+    
+    var totalNightHours: Double {
+        sessions
+            .filter { $0.dayPeriod == .night }
+            .reduce(0) { $0 + $1.duration } / 3600
+    }
+
 
     func add(_ session: DriveSession) {
         sessions.insert(session, at: 0)
