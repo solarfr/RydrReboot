@@ -1,6 +1,6 @@
 import Foundation
 import CoreLocation
-import Observation
+import Combine
 
 struct DriveSession: Identifiable, Codable {
     let id: UUID
@@ -25,59 +25,100 @@ struct RouteCoordinate: Codable {
         longitude = coordinate.longitude
     }
 
-    var clLocationCoordinate2D: CLLocationCoordinate2D {
+    var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
 
-@Observable
-final class DriveSessionStore {
+final class DriveSessionStore: ObservableObject {
     static let shared = DriveSessionStore()
 
-    private(set) var sessions: [DriveSession] = []
+    @Published var sessions: [DriveSession] = []
 
-    private let fileURL: URL
+    let fileUrl: URL
 
     private init() {
-        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        fileURL = (directory ?? URL(fileURLWithPath: "/tmp")).appendingPathComponent("drive_sessions.json")
-        load()
+        let folders = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        fileUrl = (folders.first ?? URL(fileURLWithPath: "/tmp")).appendingPathComponent("drive_sessions.json")
+        loadDrives()
     }
 
-    var totalLoggedHours: Double {
+    var totalHours: Double {
         sessions.reduce(0) { $0 + $1.duration } / 3600
     }
-    
-    var totalNightHours: Double {
-        sessions
-            .filter { $0.dayPeriod == .night }
-            .reduce(0) { $0 + $1.duration } / 3600
+
+    var nightHours: Double {
+        sessions.filter { $0.dayPeriod == .night }.reduce(0) { $0 + $1.duration } / 3600
     }
 
-
-    func add(_ session: DriveSession) {
+    func addDrive(_ session: DriveSession) {
         sessions.insert(session, at: 0)
-        save()
+        saveDrives()
     }
 
-    func remove(_ session: DriveSession) {
+    func deleteDrive(_ session: DriveSession) {
         sessions.removeAll { $0.id == session.id }
-        save()
+        saveDrives()
     }
 
-    private func load() {
-        guard let data = try? Data(contentsOf: fileURL) else { return }
-        guard let decoded = try? JSONDecoder().decode([DriveSession].self, from: data) else { return }
-        sessions = decoded
+    func loadDrives() {
+        do {
+            let data = try Data(contentsOf: fileUrl)
+            let savedSessions = try JSONDecoder().decode([DriveSession].self, from: data)
+            sessions = savedSessions
+        } catch {
+            sessions = []
+        }
     }
 
-    private func save() {
-        guard let data = try? JSONEncoder().encode(sessions) else { return }
-        try? data.write(to: fileURL, options: [.atomic])
+    func saveDrives() {
+        do {
+            let data = try JSONEncoder().encode(sessions)
+            try data.write(to: fileUrl, options: [.atomic])
+        } catch {
+            print("Drive save error:", error)
+        }
     }
 }
 
-func dayPeriod(for date: Date) -> DayPeriod {
+func getDayPeriod(_ date: Date) -> DayPeriod {
     let hour = Calendar.current.component(.hour, from: date)
-    return (6..<18).contains(hour) ? .day : .night
+
+    if hour >= 6 && hour < 18 {
+        return .day
+    }
+
+    return .night
+}
+
+func formatDuration(_ duration: TimeInterval) -> String {
+    let total = Int(duration)
+    let hours = total / 3600
+    let minutes = (total % 3600) / 60
+
+    return String(format: "%dh %02dm", hours, minutes)
+}
+
+func formatDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+
+    return formatter.string(from: date)
+}
+
+func formatDateOnly(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .none
+
+    return formatter.string(from: date)
+}
+
+func formatTimeOnly(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .none
+    formatter.timeStyle = .short
+
+    return formatter.string(from: date)
 }
