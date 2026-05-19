@@ -18,7 +18,7 @@ struct LogView: View {
                         Text("No drives saved yet!")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.black.opacity(0.7))
-                            .offset(x: 25, y: -20)
+                            .offset(y: -20)
                     } else {
                         ForEach(store.sessions) { session in
                             let route = session.route.map { $0.coordinate }

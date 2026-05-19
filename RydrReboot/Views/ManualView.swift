@@ -39,7 +39,7 @@ struct ManualView: View {
                             .datePickerStyle(.compact)
                             .foregroundStyle(.black)
                             .frame(width: 120, height: 10)
-                            .offset(x: 75, y: 5)
+                            .offset(x: 50, y: 5)
 
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 6) {
@@ -65,7 +65,7 @@ struct ManualView: View {
                                     }
                                     .pickerStyle(.menu)
                                     .frame(width: 95, height: 50)
-                                    .offset(x: -40)
+                                    .offset(x: -50)
                                 }
                             }
 
