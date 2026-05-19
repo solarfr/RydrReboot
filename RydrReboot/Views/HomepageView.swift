@@ -65,7 +65,7 @@ struct HomepageView: View {
                                 .font(.title2)
                                 .foregroundStyle(.black)
 
-                            Text(String(format: "%.1f night hours", store.nightHours))
+                            Text(String(format: "%.f night hours", store.nightHours))
                                 .font(.caption)
                                 .foregroundStyle(.black.opacity(0.6))
                         }
@@ -156,4 +156,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
         guard let coordinate = locations.last?.coordinate else { return }
         onUpdate?(coordinate)
     }
+}
+
+#Preview {
+    MainView()
 }

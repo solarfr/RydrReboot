@@ -6,14 +6,11 @@ struct ManualView: View {
     @State var hours = 0
     @State var minutes = 30
     @State var dayPeriod = DayPeriod.day
+    @State var location = LocationManager()
+    @State var currentLocation: CLLocationCoordinate2D?
     @State var mapCenter: CLLocationCoordinate2D?
     @State var pin: CLLocationCoordinate2D?
-    @State var position: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.3349, longitude: -122.0090),
-            span: MKCoordinateSpan(latitudeDelta: 0.06, longitudeDelta: 0.06)
-        )
-    )
+    @State var position: MapCameraPosition = .automatic
 
     var body: some View {
         ZStack {
@@ -90,7 +87,7 @@ struct ManualView: View {
                             }
                         }
                     }
-                    .padding(16)
+                    .padding(10)
                     .background(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .overlay {
@@ -109,6 +106,10 @@ struct ManualView: View {
                             .foregroundStyle(.black.opacity(0.6))
 
                         Map(position: $position) {
+                            if let currentLocation {
+                                Marker("You", coordinate: currentLocation)
+                            }
+
                             if let pin {
                                 Marker("Area", coordinate: pin)
                             }
@@ -180,6 +181,23 @@ struct ManualView: View {
                 .padding(.top, -30)
                 .padding(.bottom, 6)
             }
+        }
+        .onAppear {
+            location.onUpdate = { coordinate in
+                currentLocation = coordinate
+                mapCenter = coordinate
+
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    position = .region(
+                        MKCoordinateRegion(
+                            center: coordinate,
+                            span: MKCoordinateSpan(latitudeDelta: 0.008, longitudeDelta: 0.008)
+                        )
+                    )
+                }
+            }
+
+            location.requestLocation()
         }
     }
 

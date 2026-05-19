@@ -18,14 +18,14 @@ struct LogView: View {
                         Text("No drives saved yet!")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.black.opacity(0.7))
-                            .offset(y: -20)
+                            .offset(x: 25, y: -20)
                     } else {
                         ForEach(store.sessions) { session in
-                            NavigationLink {
-                                DriveLogDetailView(session: session)
-                            } label: {
-                                let route = session.route.map { $0.coordinate }
+                            let route = session.route.map { $0.coordinate }
 
+                            NavigationLink {
+                                DriveLogDetailView(session: session, store: store)
+                            } label: {
                                 VStack(alignment: .leading, spacing: 12) {
                                     Map(position: .constant(.region(getRegion(route)))) {
                                         if route.count > 1 {
@@ -55,15 +55,15 @@ struct LogView: View {
                                             .foregroundStyle(.black.opacity(0.7))
                                     }
                                 }
-                                .padding(14)
-                                .background(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                        .stroke(Color.black.opacity(0.12), lineWidth: 1)
-                                }
                             }
                             .buttonStyle(.plain)
+                            .padding(14)
+                            .background(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                    .stroke(Color.black.opacity(0.12), lineWidth: 1)
+                            }
                         }
                     }
                 }
@@ -76,7 +76,10 @@ struct LogView: View {
 }
 
 struct DriveLogDetailView: View {
+    @Environment(\.dismiss) var dismiss
+
     let session: DriveSession
+    let store: DriveSessionStore
 
     var body: some View {
         let route = session.route.map { $0.coordinate }
@@ -178,6 +181,19 @@ struct DriveLogDetailView: View {
                     .overlay {
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
                             .stroke(Color.black.opacity(0.12), lineWidth: 1)
+                    }
+
+                    Button {
+                        store.deleteDrive(session)
+                        dismiss()
+                    } label: {
+                        Text("Remove Session")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(.red)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                 }
                 .padding(.horizontal, 24)

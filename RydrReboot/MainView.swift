@@ -27,3 +27,7 @@ struct MainView: View {
         .tint(.black)
     }
 }
+
+#Preview {
+    MainView()
+}
